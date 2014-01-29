@@ -1,12 +1,3 @@
-/**
- * @file   proxy.cpp
- * @author Alex Ott <alexott@gmail.com>
- * 
- * @brief  
- * 
- * 
- */
-
 #include "proxy-server.hpp"
 #include "config.hpp"
 #include "boost/program_options.hpp"
@@ -15,10 +6,10 @@ namespace po = boost::program_options;
 struct invalid_arguments {};
 
 int main(int argc, char** argv) {
-	try {
-		int thread_num = 2, port = 10001;
-		std::string interface_address;
-    
+  try {
+    int thread_num = 2, port = 10001;
+    std::string interface_address;
+
     po::options_description desc("Allowed option");
     desc.add_options()
       ("help", "produce help message")
@@ -43,25 +34,25 @@ int main(int argc, char** argv) {
     if (vm.count("port")) {
       port = vm["port"].as<int>();
     }
-    
+
     config *conf = new config(vm["config"].as<std::string>());
     conf->parse();
-		ios_deque io_services;
-		std::deque< ba::io_service::work> io_service_work;
-		
-		boost::thread_group thr_grp;
-		
-		for (int i = 0; i < thread_num; ++i) {
-			io_service_ptr ios( new ba::io_service);
-			io_services.push_back( ios);
-			io_service_work.push_back( ba::io_service::work(*ios));
-			thr_grp.create_thread( boost::bind( &ba::io_service::run, ios));
-		}
-		server server( io_services, port, interface_address);
-		thr_grp.join_all();
-	} catch ( std::exception& e) {
-		std::cerr << e.what() << std::endl;
-	}
+    ios_deque io_services;
+    std::deque< ba::io_service::work> io_service_work;
 
-	return 0;
+    boost::thread_group thr_grp;
+
+    for (int i = 0; i < thread_num; ++i) {
+      io_service_ptr ios( new ba::io_service);
+      io_services.push_back( ios);
+      io_service_work.push_back( ba::io_service::work(*ios));
+      thr_grp.create_thread( boost::bind( &ba::io_service::run, ios));
+    }
+    server server( io_services, port, interface_address);
+    thr_grp.join_all();
+  } catch ( std::exception& e) {
+    std::cerr << e.what() << std::endl;
+  }
+
+  return 0;
 }
